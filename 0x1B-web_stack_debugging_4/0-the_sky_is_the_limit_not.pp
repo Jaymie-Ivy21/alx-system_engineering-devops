@@ -1,9 +1,10 @@
-# nginx limit.
-exec { 'nginx-fix':
-command => 'sed -i "/ULIMIT=/c\ULIMIT=\"-n 2000\"" /etc/default/nginx',
-path    => '/bin',
+# Fix the number of max open files per process
+
+exec { 'fix--for-nginx':
+  command => "/bin/sed -i /etc/default/nginx -e 's/15/3000/'"
 }
-service { 'nginx':
-ensure    => running,
-subscribe => Exec['myfix'],
+
+exec { 'restart nginx':
+  command => '/usr/sbin/service nginx restart',
+  require => Exec['fix--for-nginx']
 }
